@@ -1,0 +1,14 @@
+{
+  "name": "broadcast-server",
+  "version": "0.0.1",
+  "engines": {
+    "node": "12.x"
+  },
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^7.3.1"
+  }
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <header name = 'Access-Control-Allow-Origin' value = '*'></header>
+    <meta charset='utf-8'/>
+    <link href='./stylesheet.css' rel='stylesheet'>
+    <script type='text/javascript' src='./client.js'></script>
+</head>
+<body onload='main();'>
+    <div id='unjoined' style='width: 200px; margin: auto; margin-top: 200px; text-align: center;'>
+        <label>Username</label>
+        <input id='usernameText' type='text'/>
+        <br></br>
+        <button id='newRoom' disabled='true' onclick='onNewRoomSelected()'>New Room</button>
+        <button id='joinExisting' disabled='true' onclick='onJoinExistingSelected()'>Join Existing</button>
+    </div>
+    <div id='selecting' hidden='true'>
+        <select id='roomsAvailable'></select>
+        <button id='joinSelected' onclick='onRoomSelected()'>Join</button>
+    </div>
+    <div id='joined' hidden='true'>
+        <div id='roomInfo'><label id='roomLabel'></label></div>
+        <div id='chatHistory'></div>
+        <input id='messageText' type='text'/>
+        <button id='sendMessage' onclick='sendMessage()'>Send</button>
+    </div>
+</body>
+</html>
