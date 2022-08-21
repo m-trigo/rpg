@@ -1,0 +1,3 @@
+[submodule "s2d"]
+	path = s2d
+	url = git@github.com:m-trigo/s2d.git
