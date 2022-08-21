@@ -1,5 +1,5 @@
 {
-  "name": "broadcast-server",
+  "name": "mtmrpg",
   "version": "0.0.1",
   "engines": {
     "node": "12.x"
