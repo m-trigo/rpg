@@ -59,6 +59,7 @@ function handleDisconnect(cid) {
     if (pid) {
         delete players[pid];
         console.log(`Player disconnected (pid ${pid})`);
+        broadcast(players);
     }
 }
 
