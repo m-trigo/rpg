@@ -6,7 +6,13 @@
   },
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "local": "node server.js",
+    "copy-assets" : "rsync -av ./s2d/ builds/ --exclude='index.html' --exclude='.DS_Store' --exclude='.git/' --exclude='.gitignore'",
+    "copy-source" : "cp client.js ./builds/src/main.js",
+    "zip-build" : "zip -r ./builds/client.zip ./builds -x '*.DS_Store*'",
+    "push-build" : "./tools/butler push ./builds/client.zip m-trigo/rpg:html",
+    "build" : "npm run copy-assets && npm run copy-source && npm run zip-build",
+    "deploy" : "npm run build && npm run push-build"
   },
   "dependencies": {
     "ws": "^7.3.1"
