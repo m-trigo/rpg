@@ -7,6 +7,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "watch": "nodemon server.js",
     "copy-assets": "rsync -av ./s2d/ builds/ --exclude='index.html' --exclude='.DS_Store' --exclude='.git/' --exclude='.gitignore'",
     "copy-source": "cp client.js ./builds/src/main.js",
     "zip-build": "zip -r ./builds/client.zip ./builds -x '*.DS_Store*'",
