@@ -22,12 +22,21 @@ function playerId(cid) {
 }
 
 function createPlayer(cid) {
+    let randomColour = () => {
+        let colours = [
+            '#00008B', '#DC143C', '#A52A2A', '#8A2BE2',
+            '#006400', '#8B0000', '#FF1493', '#1E90FF',
+            '#B22222', '#228B22', '#4B0082', '#4169E1'
+        ];
+
+        return colours[Math.floor(Math.random() * colours.length)];
+    };
     let pid = nextPlayerId;
     players[pid] = {
         cid,
         pid,
         position: { x: 0, y : 0 },
-        color: Math.floor(Math.random() * 16777215).toString(16)
+        color: randomColour()
     };
     nextPlayerId++;
     return pid;
@@ -47,6 +56,11 @@ function parseClientData(client, data) {
 
     if (data.type == 'update') {
         players[playerId(client.id)] = data.raw;
+        broadcast(players);
+    }
+
+    if (data.type == 'offscreen') {
+        players[data.raw.pid].offscreen = data.raw.value;
         broadcast(players);
     }
 }

@@ -10,12 +10,27 @@ let screenCentre = s2d.vec.zero;
 let serverOrigin = s2d.vec.zero;
 let players = {};
 
-function player() {
-    return players[pid];
+function getPlayer(playerId = pid) {
+    return players[playerId];
+}
+
+let lastNotifyTimestamp = {};
+let notifyCooldowns = {
+    'offscreen': 1
 }
 
 function notify(type, raw = {}) {
+    let now = s2d.time.elapsed();
+
+    if (notifyCooldowns[type] && lastNotifyTimestamp[type]) {
+        if (now - lastNotifyTimestamp[type] < notifyCooldowns[type]) {
+            console.log(`Notify skipped (${type})`);
+            return;
+        }
+    }
+
     server.send(JSON.stringify({type, raw}));
+    lastNotifyTimestamp[type] = now;
 }
 
 function parseServerData(data) {
@@ -53,6 +68,14 @@ function update(dt) {
             let ppos = s2d.vec.add(serverOrigin, player.position);
             let rect = s2d.rect.make(ppos.x, ppos.y, ppos.x + 20, ppos.y + 40);
             s2d.rect.draw(rect, player.color);
+
+            let isVisible = -5 <= ppos.x && ppos.x <= window.innerWidth + 5;
+            if (!isVisible && !player.offscreen) {
+                notify('offscreen', { pid, value: true });
+            }
+            if (isVisible && player.offscreen) {
+                notify('offscreen', { pid, value: false });
+            }
         }
 
         if (s2d.input.mousePressed() && clicks < 3) {
@@ -66,13 +89,29 @@ function update(dt) {
         if (s2d.input.mouseDown()) {
             let touchPosition = s2d.input.mousePosition();
             let side = touchPosition.x <= screenCentre.x ? 'left' : 'right';
-            let p = player();
-            p.position.x += 120 * dt * (side == 'left' ? - 1 : 1);
+            let p = getPlayer();
+            p.position.x += 300 * dt * (side == 'left' ? - 1 : 1);
             notify('update', p);
         }
         s2d.canvas.clear('#424242');
         let line = s2d.rect.make(window.innerWidth/2 - 4, 0, window.innerWidth/2 + 4, window.innerHeight);
         s2d.rect.draw(line, '#e1e1e1');
+
+        if (getPlayer().offscreen) {
+            s2d.canvas.clear('#e1e1e1');
+            let x = getPlayer().position.x;
+
+            if (getPlayer().position.x > 0) {
+                x += window.innerWidth * -0.5;
+            }
+            else {
+                x += window.innerWidth * 1.5;
+            }
+
+            let y = screenCentre.y;
+            let rect = s2d.rect.make(x, y, x + 20, y + 40);
+            s2d.rect.draw(rect, getPlayer().color);
+        }
     }
 }
 
