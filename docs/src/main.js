@@ -25,7 +25,7 @@ function notify(type, raw = {}) {
 
     if (notifyCooldowns[type] && lastNotifyTimestamp[type]) {
         if (now - lastNotifyTimestamp[type] < notifyCooldowns[type]) {
-            console.log(`Notify skipped (${type})`);
+            //console.log(`Notify skipped (${type})`);
             return;
         }
     }
@@ -69,7 +69,6 @@ function update(dt) {
             let ppos = s2d.vec.add(serverOrigin, player.position);
             let rect = s2d.rect.make(ppos.x, ppos.y, ppos.x + 20, ppos.y + 40);
             s2d.rect.draw(rect, player.color);
-            console.log(player.position.x);
         }
 
         if (s2d.input.mousePressed() && clicks < 3) {
@@ -84,10 +83,9 @@ function update(dt) {
         let p = getPlayer();
         let dirty = false;
 
-        if (s2d.input.mouseDown()) {
+        if (p && s2d.input.mouseDown()) {
             let touchPosition = s2d.input.mousePosition();
             let side = touchPosition.x <= screenCentre.x ? 'left' : 'right';
-            
             p.position.x += 300 * dt * (side == 'left' ? - 1 : 1);
             dirty = true;
         }
