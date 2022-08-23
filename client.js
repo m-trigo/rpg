@@ -69,6 +69,7 @@ function update(dt) {
             let ppos = s2d.vec.add(serverOrigin, player.position);
             let rect = s2d.rect.make(ppos.x, ppos.y, ppos.x + 20, ppos.y + 40);
             s2d.rect.draw(rect, player.color);
+            console.log(player.position);
 
             let isVisible = -5 <= ppos.x && ppos.x <= window.innerWidth + 5;
             if (!isVisible && !player.offscreen) {
