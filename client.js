@@ -16,6 +16,7 @@ function getPlayer(playerId = pid) {
 
 let lastNotifyTimestamp = {};
 let notifyCooldowns = {
+    'update': 0.25,
     'offscreen': 1
 }
 
@@ -86,13 +87,14 @@ function update(dt) {
         }
     }
     else {
+
         if (s2d.input.mouseDown()) {
             let touchPosition = s2d.input.mousePosition();
             let side = touchPosition.x <= screenCentre.x ? 'left' : 'right';
             let p = getPlayer();
             p.position.x += 300 * dt * (side == 'left' ? - 1 : 1);
-            notify('update', p);
         }
+
         s2d.canvas.clear('#424242');
         let line = s2d.rect.make(window.innerWidth/2 - 4, 0, window.innerWidth/2 + 4, window.innerHeight);
         s2d.rect.draw(line, '#e1e1e1');
@@ -112,6 +114,8 @@ function update(dt) {
             let rect = s2d.rect.make(x, y, x + 20, y + 40);
             s2d.rect.draw(rect, getPlayer().color);
         }
+
+        notify('update', p);
     }
 }
 
