@@ -51,17 +51,14 @@ function parseClientData(client, data) {
         let pid = createPlayer(client.id);
         notify(client, 'pid', pid);
         console.log(`Player joined (pid: ${pid})`)
-        broadcast(players);
     }
 
     if (data.type == 'update') {
         players[playerId(client.id)] = data.raw;
-        broadcast(players);
     }
 
     if (data.type == 'offscreen') {
         players[data.raw.pid].offscreen = data.raw.value;
-        broadcast(players);
     }
 }
 
@@ -73,7 +70,6 @@ function handleDisconnect(cid) {
     if (pid) {
         delete players[pid];
         console.log(`Player disconnected (pid ${pid})`);
-        broadcast(players);
     }
 }
 
@@ -87,3 +83,5 @@ webSocketServer.on('connection', client => {
     clients.push(client);
     console.log(`Client connected (cid: ${client.id})`);
 });
+
+setInterval(() => broadcast(players), 50);
