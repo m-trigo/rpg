@@ -16,7 +16,7 @@ function getPlayer(playerId = pid) {
 
 let lastNotifyTimestamp = {};
 let notifyCooldowns = {
-    'update': 0.25,
+    'update': 0.1,
     'offscreen': 1
 }
 
@@ -69,15 +69,7 @@ function update(dt) {
             let ppos = s2d.vec.add(serverOrigin, player.position);
             let rect = s2d.rect.make(ppos.x, ppos.y, ppos.x + 20, ppos.y + 40);
             s2d.rect.draw(rect, player.color);
-            console.log(player.position);
-
-            let isVisible = -5 <= ppos.x && ppos.x <= window.innerWidth + 5;
-            if (!isVisible && !player.offscreen) {
-                notify('offscreen', { pid, value: true });
-            }
-            if (isVisible && player.offscreen) {
-                notify('offscreen', { pid, value: false });
-            }
+            console.log(player.position.x);
         }
 
         if (s2d.input.mousePressed() && clicks < 3) {
@@ -89,34 +81,24 @@ function update(dt) {
     }
     else {
 
+        let p = getPlayer();
+        let dirty = false;
+
         if (s2d.input.mouseDown()) {
             let touchPosition = s2d.input.mousePosition();
             let side = touchPosition.x <= screenCentre.x ? 'left' : 'right';
-            let p = getPlayer();
+            
             p.position.x += 300 * dt * (side == 'left' ? - 1 : 1);
+            dirty = true;
+        }
+
+        if (dirty) {
+            notify('update', p);
         }
 
         s2d.canvas.clear('#424242');
         let line = s2d.rect.make(window.innerWidth/2 - 4, 0, window.innerWidth/2 + 4, window.innerHeight);
         s2d.rect.draw(line, '#e1e1e1');
-
-        if (getPlayer().offscreen) {
-            s2d.canvas.clear('#e1e1e1');
-            let x = getPlayer().position.x;
-
-            if (getPlayer().position.x > 0) {
-                x += window.innerWidth * -0.5;
-            }
-            else {
-                x += window.innerWidth * 1.5;
-            }
-
-            let y = screenCentre.y;
-            let rect = s2d.rect.make(x, y, x + 20, y + 40);
-            s2d.rect.draw(rect, getPlayer().color);
-        }
-
-        notify('update', p);
     }
 }
 
