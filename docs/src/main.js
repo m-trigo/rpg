@@ -1,4 +1,4 @@
-const LOCAL = false;
+const LOCAL = window.location.href.includes('s2d') ? true : false;
 const serverAddress = LOCAL ? 'ws://localhost:9021' : 'wss://agile-temple-23495.herokuapp.com';
 
 let server = null;
@@ -14,10 +14,12 @@ function getPlayer(playerId = pid) {
     return players[playerId];
 }
 
-let lastNotifyTimestamp = {};
+let lastNotifyTimestamp = {
+
+};
+
 let notifyCooldowns = {
-    'update': 0.1,
-    'offscreen': 1
+    'update': 0.01
 }
 
 function notify(type, raw = {}) {
@@ -25,7 +27,7 @@ function notify(type, raw = {}) {
 
     if (notifyCooldowns[type] && lastNotifyTimestamp[type]) {
         if (now - lastNotifyTimestamp[type] < notifyCooldowns[type]) {
-            //console.log(`Notify skipped (${type})`);
+            console.log(`Notify skipped (${type})`);
             return;
         }
     }
@@ -38,16 +40,34 @@ function parseServerData(data) {
     if (data.type == 'cid') {
         cid = parseInt(data.raw);
         console.log(`Joined as client with id ${cid}`);
-        notify('init');
     }
 
     if (data.type == 'pid') {
         pid = parseInt(data.raw);
-        console.log(`Joined as player with id ${cid}`);
+        console.log(`Joined as player with id ${pid}`);
     }
 
     if (data.type == 'update') {
-        players = data.raw;
+        if (pid > 0) {
+            if (getPlayer() == undefined) {
+                players = data.raw;
+            }
+            return;
+        }
+
+        // Update if newer
+        for (const player of Object.values(data.raw)) {
+            if (getPlayer(player.pid) == undefined || player.updated > getPlayer(player.pid).updated) {
+                players[player.pid] = player;
+            }
+        }
+
+        // Delete if missing
+        for (const id of Object.keys(players)) {
+            if (data.raw[id] == undefined) {
+                delete players[id];
+            }
+        }
     }
 }
 
@@ -57,7 +77,12 @@ function init() {
     serverOrigin = screenCentre;
 
     server = new WebSocket(serverAddress);
-    server.onopen = () => console.log(`Connected to server`);
+    server.onopen = () => {
+        console.log(`Connected to server`);
+        if (window.location.href.includes('join')) {
+            notify('join');
+        }
+    }
     server.onmessage = message => parseServerData(JSON.parse(message.data));
 }
 
@@ -65,32 +90,24 @@ function update(dt) {
 
     if (pid == 0) {
         s2d.canvas.clear('#e1e1e1');
-        for (const [pid, player] of Object.entries(players)) {
-            let ppos = s2d.vec.add(serverOrigin, player.position);
-            let rect = s2d.rect.make(ppos.x, ppos.y, ppos.x + 20, ppos.y + 40);
+        for (const player of Object.values(players)) {
+            let pos = s2d.vec.add(serverOrigin, player.position);
+            let rect = s2d.rect.make(pos.x, pos.y, pos.x + 20, pos.y + 40);
             s2d.rect.draw(rect, player.color);
-        }
-
-        if (s2d.input.mousePressed() && clicks < 3) {
-            clicks++;
-            if (clicks > 2 ) {
-                notify('join');
-            }
         }
     }
     else {
-
         let p = getPlayer();
-        let dirty = false;
+        let modified = false;
 
-        if (p && s2d.input.mouseDown()) {
+        if (s2d.input.mouseDown()) {
             let touchPosition = s2d.input.mousePosition();
-            let side = touchPosition.x <= screenCentre.x ? 'left' : 'right';
-            p.position.x += 300 * dt * (side == 'left' ? - 1 : 1);
-            dirty = true;
+            p.position.x += 300 * dt * (touchPosition.x <= screenCentre.x ? - 1 : 1);
+            modified = true;
         }
 
-        if (dirty) {
+        if (modified) {
+            p.updated = s2d.time.elapsed();
             notify('update', p);
         }
 
@@ -101,5 +118,5 @@ function update(dt) {
 }
 
 function main() {
-    s2d.core.init(512, 512, () => {}, init, update);
+    s2d.core.init(512, 512, null, init, update);
 }

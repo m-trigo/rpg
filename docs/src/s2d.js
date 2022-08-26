@@ -285,7 +285,7 @@ class s2d {
             /* Initialize */
             s2d.state.core?.load?.();
 
-            Promise.allSettled(s2d.state.assets.loadingPromises).then(e => {
+            Promise.allSettled(s2d.state.assets.loadingPromises).then(() => {
                 s2d.state.data = s2d.data.deepCopy(__data__);
                 s2d.canvas.clear();
                 s2d.state.core?.init?.();
@@ -465,14 +465,14 @@ class s2d {
 
             let current = history[historyLength - 1].when;
             let last = history[historyLength - 2].when;
-            return current - last < s2d.state.input.maxTimeBetweenDoubleClick;;
+            return current - last < s2d.state.input.maxTimeBetweenDoubleClick;
         }
     };
 
     static assets = {
 
         loadFontFamily(family, src) {
-            var font = new FontFace(family, `url(${src})`);
+            let font = new FontFace(family, `url(${src})`);
             let promise = font.load().then(loaded => {
                 document.fonts.add(loaded);
             }).catch(e => console.log(e));
@@ -878,7 +878,7 @@ class s2d {
     static system = {
 
         download(filename, content) {
-            var element = document.createElement('a');
+            let element = document.createElement('a');
             element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
             element.setAttribute('download', filename);
             element.style.display = 'none';
@@ -887,4 +887,4 @@ class s2d {
             document.body.removeChild(element);
         }
     };
-};
+}
