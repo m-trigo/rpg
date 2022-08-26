@@ -59,6 +59,7 @@ function parseServerData(data) {
         for (const player of Object.values(data.raw)) {
             if (getPlayer(player.pid) == undefined || player.updated > getPlayer(player.pid).updated) {
                 players[player.pid] = player;
+                console.log(`${player.pid} ${s2d.vec.toString(player.position)}`)
             }
         }
 
