@@ -2,21 +2,57 @@ const ws = require('ws')
 const port = process.env.PORT || 9021
 
 let clients = [];
-let players = {};
+
+let nextClientId = 1;
 let nextPlayerId = 100;
+
+let players = {};
+let modified = false;
+
+/* Networking */
+
+function playerClients() {
+    return clients.filter(c => c.pid != undefined);
+}
+
+function screenClients() {
+    return clients.filter(c => c.pid == undefined);
+}
 
 function notify(client, type, raw) {
     client.send(JSON.stringify({type, raw}));
 }
 
-function broadcast(raw) {
-    clients.forEach(c => notify(c, 'update', raw))
+function broadcast(raw, who = 'all') {
+
+    // Don't send an empty object update
+    if (typeof(raw) == 'object' && Object.keys(raw).length === 0) {
+        return;
+    }
+
+    let group = [];
+
+    if (who == 'all') {
+        group = clients;
+    }
+
+    if (who == 'players') {
+        group = playerClients();
+    }
+
+    if (who == 'screens') {
+        group = screenClients();
+    }
+
+    group.forEach(c => notify(c, 'update', raw))
 }
 
+/* Gameplay */
+
 function playerId(cid) {
-    for (const [key, value] of Object.entries(players)) {
-        if (value.cid == cid) {
-            return value.pid;
+    for (const player of Object.values(players)) {
+        if (player.cid == cid) {
+            return player.pid;
         }
     }
 }
@@ -36,29 +72,29 @@ function createPlayer(cid) {
         cid,
         pid,
         position: { x: 0, y : 0 },
-        color: randomColour()
+        color: randomColour(),
+        updated: 0
     };
     nextPlayerId++;
+    modified = true;
     return pid;
 }
 
 function parseClientData(client, data) {
-    if (data.type == 'init') {
-        notify(client, 'update', players);
-    }
 
     if (data.type == 'join') {
         let pid = createPlayer(client.id);
         notify(client, 'pid', pid);
+        notify(client, 'update', players);
         console.log(`Player joined (pid: ${pid})`)
     }
 
     if (data.type == 'update') {
-        players[playerId(client.id)] = data.raw;
-    }
-
-    if (data.type == 'offscreen') {
-        players[data.raw.pid].offscreen = data.raw.value;
+        let player = players[playerId(client.id)];
+        if (player.updated < data.raw.updated) {
+            players[playerId(client.id)] = data.raw;
+            modified = true;
+        }
     }
 }
 
@@ -69,19 +105,25 @@ function handleDisconnect(cid) {
     let pid = playerId(cid);
     if (pid) {
         delete players[pid];
+        modified = true;
         console.log(`Player disconnected (pid ${pid})`);
     }
 }
 
 let webSocketServer = new ws.Server({port});
 webSocketServer.on('connection', client => {
-    client.id = clients.length;
+    client.id = nextClientId++;
     client.onmessage = message => parseClientData(client, JSON.parse(message.data));
     client.onclose = c => handleDisconnect(c.target.id);
     notify(client, 'cid', client.id);
-    notify(client, 'update', players);
     clients.push(client);
+    modified = true;
     console.log(`Client connected (cid: ${client.id})`);
 });
 
-setInterval(() => broadcast(players), 50);
+setInterval(() => {
+    if (modified) {
+        modified = false;
+        broadcast(players, 'screens')
+    }
+}, 5);
