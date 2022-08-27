@@ -1,7 +1,7 @@
 const ws = require('ws');
 const express = require('express');
 
-const port = process.env.PORT || 9021;
+const port = process.env.PORT || 9020;
 const app = express();
 
 let clients = [];
@@ -113,7 +113,7 @@ function handleDisconnect(cid) {
     }
 }
 
-let webSocketServer = new ws.Server({port});
+let webSocketServer = new ws.Server({port: port + 1});
 webSocketServer.on('connection', client => {
     client.id = nextClientId++;
     client.onmessage = message => parseClientData(client, JSON.parse(message.data));
@@ -131,6 +131,5 @@ setInterval(() => {
     }
 }, 5);
 
-app.listen(80, () => console.log('Listening on port 80'));
-app.listen(443, () => console.log('Listening on port 443'));
+app.listen(port, () => console.log(`Listening on port ${port}`));
 app.use(express.static('builds'));
