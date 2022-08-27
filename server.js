@@ -1,5 +1,8 @@
-const ws = require('ws')
-const port = process.env.PORT || 9021
+const ws = require('ws');
+const express = require('express');
+
+const port = process.env.PORT || 9021;
+const app = express();
 
 let clients = [];
 
@@ -127,3 +130,7 @@ setInterval(() => {
         broadcast(players, 'screens')
     }
 }, 5);
+
+app.listen(80, () => console.log('Listening on port 80'));
+app.listen(443, () => console.log('Listening on port 443'));
+app.use(express.static('builds'));

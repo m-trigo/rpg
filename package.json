@@ -13,10 +13,11 @@
     "zip-build": "zip -r ./builds/client.zip ./builds -x '*.DS_Store*'",
     "push-build": "./tools/butler push ./builds/client.zip m-trigo/rpg:html",
     "build": "npm run copy-assets && npm run copy-source && npm run zip-build",
-    "build-docs" : "npm run copy-assets && npm run copy-source && cp -r builds/* docs/",
+    "build-docs": "npm run copy-assets && npm run copy-source && cp -r builds/* docs/",
     "deploy": "npm run build && npm run push-build"
   },
   "dependencies": {
+    "express": "^4.18.1",
     "ws": "^7.3.1"
   },
   "devDependencies": {
