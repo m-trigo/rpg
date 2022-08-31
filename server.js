@@ -113,7 +113,7 @@ function handleDisconnect(cid) {
     }
 }
 
-let webSocketServer = new ws.Server({port: port + 1});
+let webSocketServer = new ws.Server();
 webSocketServer.on('connection', client => {
     client.id = nextClientId++;
     client.onmessage = message => parseClientData(client, JSON.parse(message.data));
