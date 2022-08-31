@@ -2,7 +2,7 @@ const ws = require('ws');
 const express = require('express');
 
 const port = process.env.PORT || 9020;
-const app = express();
+const server = express();
 
 let clients = [];
 
@@ -113,7 +113,7 @@ function handleDisconnect(cid) {
     }
 }
 
-let webSocketServer = new ws.Server({ noServer: true });
+let webSocketServer = new ws.Server({ server });
 webSocketServer.on('connection', client => {
     client.id = nextClientId++;
     client.onmessage = message => parseClientData(client, JSON.parse(message.data));
@@ -131,5 +131,5 @@ setInterval(() => {
     }
 }, 5);
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
-app.use(express.static('builds'));
+server.listen(port, () => console.log(`Listening on port ${port}`));
+server.use(express.static('builds'));
