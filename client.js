@@ -1,6 +1,6 @@
 const url = window.location.href;
 const LOCAL = (url.includes('local') || url.includes('s2d')) ? true : false;
-const serverAddress = LOCAL ? 'ws://localhost:9021' : 'wss://agile-temple-23495.herokuapp.com';
+const serverAddress = LOCAL ? 'ws://localhost:9020' : 'wss://agile-temple-23495.herokuapp.com';
 
 let server = null;
 let cid = 0;

@@ -2,7 +2,6 @@ const ws = require('ws');
 const express = require('express');
 
 const port = process.env.PORT || 9020;
-const server = express();
 
 let clients = [];
 
@@ -113,7 +112,10 @@ function handleDisconnect(cid) {
     }
 }
 
-let webSocketServer = new ws.Server({ server });
+let app = express();
+app.use(express.static('builds'));
+
+let webSocketServer = new ws.Server({ noServer: true });
 webSocketServer.on('connection', client => {
     client.id = nextClientId++;
     client.onmessage = message => parseClientData(client, JSON.parse(message.data));
@@ -124,12 +126,18 @@ webSocketServer.on('connection', client => {
     console.log(`Client connected (cid: ${client.id})`);
 });
 
+let httpServer = app.listen(port, () => console.log(`Listening on port ${port}`));
+httpServer.on('upgrade', (request, socket, head) => {
+    console.log(socket);
+    webSocketServer.handleUpgrade(request, socket, head, client => {
+        console.log(socket);
+        webSocketServer.emit('connection', client, request);
+    });
+});
+
 setInterval(() => {
     if (modified) {
         modified = false;
         broadcast(players, 'screens')
     }
 }, 5);
-
-server.listen(port, () => console.log(`Listening on port ${port}`));
-server.use(express.static('builds'));
