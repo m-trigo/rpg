@@ -1,5 +1,6 @@
-const LOCAL = window.location.href.includes('s2d') ? true : false;
-const serverAddress = LOCAL ? 'ws://localhost:9021' : 'wss://agile-temple-23495.herokuapp.com';
+const url = window.location.href;
+const LOCAL = (url.includes('local') || url.includes('s2d')) ? true : false;
+const serverAddress = LOCAL ? 'ws://localhost:9020' : 'wss://agile-temple-23495.herokuapp.com';
 
 let server = null;
 let cid = 0;
@@ -59,7 +60,6 @@ function parseServerData(data) {
         for (const player of Object.values(data.raw)) {
             if (getPlayer(player.pid) == undefined || player.updated > getPlayer(player.pid).updated) {
                 players[player.pid] = player;
-                console.log(`${player.pid} ${s2d.vec.toString(player.position)}`)
             }
         }
 
