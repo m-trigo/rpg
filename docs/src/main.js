@@ -5,11 +5,12 @@ const serverAddress = LOCAL ? 'ws://localhost:9020' : 'wss://agile-temple-23495.
 let server = null;
 let cid = 0;
 let pid = 0;
-let clicks = 0;
 
 let screenCentre = s2d.vec.zero;
 let serverOrigin = s2d.vec.zero;
 let players = {};
+
+let qrcode = null;
 
 function getPlayer(playerId = pid) {
     return players[playerId];
@@ -20,7 +21,6 @@ let lastNotifyTimestamp = {
 };
 
 let notifyCooldowns = {
-    'update': 0.01
 }
 
 function notify(type, raw = {}) {
@@ -46,6 +46,15 @@ function parseServerData(data) {
     if (data.type == 'pid') {
         pid = parseInt(data.raw);
         console.log(`Joined as player with id ${pid}`);
+    }
+
+    if (data.type == 'qrcode') {
+        //console.log(data.raw);
+
+        let img = new Image();
+        img.onload = () => qrcode = img;
+        img.src = data.raw;
+
     }
 
     if (data.type == 'update') {
@@ -95,6 +104,11 @@ function update(dt) {
             let pos = s2d.vec.add(serverOrigin, player.position);
             let rect = s2d.rect.make(pos.x, pos.y, pos.x + 20, pos.y + 40);
             s2d.rect.draw(rect, player.color);
+        }
+
+        if (qrcode) {
+            let context = s2d.canvas.context();
+            context.drawImage(qrcode, 0, 0);
         }
     }
     else {
