@@ -11,6 +11,7 @@ let serverOrigin = s2d.vec.zero;
 let players = {};
 
 let qrcode = null;
+let playerUpdated = true;
 
 function getPlayer(playerId = pid) {
     return players[playerId];
@@ -66,11 +67,21 @@ function parseServerData(data) {
         }
 
         // Update if newer
+        if (players)
+            playerUpdated = false;
+
         for (const player of Object.values(data.raw)) {
             if (getPlayer(player.pid) == undefined || player.updated > getPlayer(player.pid).updated) {
                 players[player.pid] = player;
+                playerUpdated = true;
+            }
+            else {
+                console.log(`Dropped update`);
             }
         }
+
+        if (!playerUpdated)
+            console.log(`Player not updated this frame`);
 
         // Delete if missing
         for (const id of Object.keys(players)) {
@@ -100,6 +111,7 @@ function update(dt) {
 
     if (pid == 0) {
         s2d.canvas.clear('#e1e1e1');
+
         for (const player of Object.values(players)) {
             let pos = s2d.vec.add(serverOrigin, player.position);
             let rect = s2d.rect.make(pos.x, pos.y, pos.x + 20, pos.y + 40);
@@ -134,4 +146,5 @@ function update(dt) {
 
 function main() {
     s2d.core.init(512, 512, null, init, update);
+    console.log('Version 1');
 }
