@@ -11,6 +11,8 @@ let nextPlayerId = 100;
 let players = {};
 let modified = false;
 
+let joinQrCode = "";
+
 /* Networking */
 
 function playerClients() {
@@ -121,6 +123,7 @@ webSocketServer.on('connection', client => {
     client.onmessage = message => parseClientData(client, JSON.parse(message.data));
     client.onclose = c => handleDisconnect(c.target.id);
     notify(client, 'cid', client.id);
+    notify(client, 'qrcode', joinQrCode);
     clients.push(client);
     modified = true;
     console.log(`Client connected (cid: ${client.id})`);
@@ -128,9 +131,7 @@ webSocketServer.on('connection', client => {
 
 let httpServer = app.listen(port, () => console.log(`Listening on port ${port}`));
 httpServer.on('upgrade', (request, socket, head) => {
-    console.log(socket);
     webSocketServer.handleUpgrade(request, socket, head, client => {
-        console.log(socket);
         webSocketServer.emit('connection', client, request);
     });
 });
@@ -141,3 +142,13 @@ setInterval(() => {
         broadcast(players, 'screens')
     }
 }, 5);
+
+
+var qrcode = require('qrcode')
+qrcode.toDataURL('https://agile-temple-23495.herokuapp.com?join', (error, base64String) => {
+    if (error) {
+        console.log(error);
+    }
+
+    joinQrCode = base64String;
+})
