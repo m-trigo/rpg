@@ -21,7 +21,7 @@ let lastNotifyTimestamp = {
 };
 
 let notifyCooldowns = {
-    //'update': 1.0/30
+    'update': 1.0/30
 }
 
 function notify(type, raw = {}) {
