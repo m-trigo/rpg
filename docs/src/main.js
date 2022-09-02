@@ -21,7 +21,6 @@ let lastNotifyTimestamp = {
 };
 
 let notifyCooldowns = {
-    'update': 1.0/30
 }
 
 function notify(type, raw = {}) {
@@ -139,13 +138,10 @@ function update(dt) {
 
         if (modified) {
             p.updated = s2d.time.elapsed();
-            notify('update', p);
+            //notify('update', p);
         }
 
         // Player Input UI
-     
-        let button = s2d.rect.make()
-
         let line = s2d.rect.make(width/2 - 4, 0, width/2 + 4, height);
         s2d.rect.draw(line, 'black');
     }
@@ -158,3 +154,10 @@ function main() {
     s2d.core.init(512, 512, null, init, update);
     console.log('Version 1');
 }
+
+setInterval(() => {
+    let p = getPlayer();
+    if (p) {
+        notify('update', p);
+    }
+}, 1000/120);
