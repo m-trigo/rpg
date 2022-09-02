@@ -144,7 +144,7 @@ setInterval(() => {
 
 
 var qrcode = require('qrcode')
-qrcode.toDataURL('https://agile-temple-23495.herokuapp.com?join', (error, base64String) => {
+qrcode.toDataURL('https://m-trigo.github.io/rpg?join', (error, base64String) => {
     if (error) {
         console.log(error);
     }
