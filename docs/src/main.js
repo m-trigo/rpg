@@ -7,10 +7,10 @@ let cid = 0;
 let pid = 0;
 
 let screenCentre = s2d.vec.zero;
-let serverOrigin = s2d.vec.zero;
 let players = {};
 
 let qrcode = null;
+let playerUpdated = true;
 
 function getPlayer(playerId = pid) {
     return players[playerId];
@@ -21,6 +21,7 @@ let lastNotifyTimestamp = {
 };
 
 let notifyCooldowns = {
+    //'update': 1.0/30
 }
 
 function notify(type, raw = {}) {
@@ -66,11 +67,21 @@ function parseServerData(data) {
         }
 
         // Update if newer
+        if (players)
+            playerUpdated = false;
+
         for (const player of Object.values(data.raw)) {
             if (getPlayer(player.pid) == undefined || player.updated > getPlayer(player.pid).updated) {
                 players[player.pid] = player;
+                playerUpdated = true;
+            }
+            else {
+                console.log(`Dropped update`);
             }
         }
+
+        if (!playerUpdated)
+            console.log(`Player not updated this frame`);
 
         // Delete if missing
         for (const id of Object.keys(players)) {
@@ -82,9 +93,11 @@ function parseServerData(data) {
 }
 
 function init() {
+
+    s2d.debug.fixedTimestep(true);
+    s2d.state.time.fixedTimestepDt = 1/20; // force 20 fps
+
     s2d.canvas.resizeTo(window.innerWidth, window.innerHeight);
-    screenCentre = s2d.vec.make(s2d.canvas.width() / 2, s2d.canvas.height() / 2);
-    serverOrigin = screenCentre;
 
     server = new WebSocket(serverAddress);
     server.onopen = () => {
@@ -98,8 +111,15 @@ function init() {
 
 function update(dt) {
 
+    let width = window.innerWidth //* 0.8;
+    let height = window.innerHeight //* 0.8;
+    s2d.canvas.resizeTo(width, height);
+    screenCentre = s2d.vec.make(width / 2, height / 2);
+    let serverOrigin = screenCentre;
+
+    s2d.canvas.clear('ghostwhite');
+
     if (pid == 0) {
-        s2d.canvas.clear('#e1e1e1');
         for (const player of Object.values(players)) {
             let pos = s2d.vec.add(serverOrigin, player.position);
             let rect = s2d.rect.make(pos.x, pos.y, pos.x + 20, pos.y + 40);
@@ -126,12 +146,19 @@ function update(dt) {
             notify('update', p);
         }
 
-        s2d.canvas.clear('#424242');
-        let line = s2d.rect.make(window.innerWidth/2 - 4, 0, window.innerWidth/2 + 4, window.innerHeight);
-        s2d.rect.draw(line, '#e1e1e1');
+        // Player Input UI
+     
+        let button = s2d.rect.make()
+
+        let line = s2d.rect.make(width/2 - 4, 0, width/2 + 4, height);
+        s2d.rect.draw(line, 'black');
     }
+
+    let border = s2d.rect.make(0, 0, width, height);
+    s2d.rect.draw(border, 'black');
 }
 
 function main() {
     s2d.core.init(512, 512, null, init, update);
+    console.log('Version 1');
 }
