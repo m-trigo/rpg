@@ -160,4 +160,4 @@ setInterval(() => {
     if (p) {
         notify('update', p);
     }
-}, 1000/120);
+}, 5);
