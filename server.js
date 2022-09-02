@@ -140,7 +140,7 @@ setInterval(() => {
         modified = false;
         broadcast(players, 'screens')
     }
-}, 1000/120);
+}, 5);
 
 
 var qrcode = require('qrcode')
