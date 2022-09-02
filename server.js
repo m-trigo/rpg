@@ -1,5 +1,5 @@
 const ws = require('ws');
-const express = require('express');
+//const express = require('express');
 
 const port = process.env.PORT || 9020;
 
@@ -64,9 +64,7 @@ function playerId(cid) {
 function createPlayer(cid) {
     let randomColour = () => {
         let colours = [
-            '#00008B', '#DC143C', '#A52A2A', '#8A2BE2',
-            '#006400', '#8B0000', '#FF1493', '#1E90FF',
-            '#B22222', '#228B22', '#4B0082', '#4169E1'
+            'red', 'green', 'blue', 'purple', 'orange'
         ];
 
         return colours[Math.floor(Math.random() * colours.length)];
@@ -114,10 +112,11 @@ function handleDisconnect(cid) {
     }
 }
 
-let app = express();
-app.use(express.static('builds'));
+// let app = express();
+// app.use(express.static('builds'));
 
-let webSocketServer = new ws.Server({ noServer: true });
+// let webSocketServer = new ws.Server({ noServer: true });
+let webSocketServer = new ws.Server({ port });
 webSocketServer.on('connection', client => {
     client.id = nextClientId++;
     client.onmessage = message => parseClientData(client, JSON.parse(message.data));
@@ -129,12 +128,12 @@ webSocketServer.on('connection', client => {
     console.log(`Client connected (cid: ${client.id})`);
 });
 
-let httpServer = app.listen(port, () => console.log(`Listening on port ${port}`));
-httpServer.on('upgrade', (request, socket, head) => {
-    webSocketServer.handleUpgrade(request, socket, head, client => {
-        webSocketServer.emit('connection', client, request);
-    });
-});
+// let httpServer = app.listen(port, () => console.log(`Listening on port ${port}`));
+// httpServer.on('upgrade', (request, socket, head) => {
+//     webSocketServer.handleUpgrade(request, socket, head, client => {
+//         webSocketServer.emit('connection', client, request);
+//     });
+// });
 
 setInterval(() => {
     if (modified) {
