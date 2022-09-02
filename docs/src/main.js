@@ -93,10 +93,6 @@ function parseServerData(data) {
 }
 
 function init() {
-
-    s2d.debug.fixedTimestep(true);
-    s2d.state.time.fixedTimestepDt = 1/20; // force 20 fps
-
     s2d.canvas.resizeTo(window.innerWidth, window.innerHeight);
 
     server = new WebSocket(serverAddress);
