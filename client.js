@@ -34,7 +34,7 @@ let buttons = {
     }
 }
 
-function update_screen_positions() {
+function update_screen_values() {
     width = window.innerWidth;
     height = window.innerHeight;
     screenCentre = s2d.vec.make(width / 2, height / 2);
@@ -43,6 +43,19 @@ function update_screen_positions() {
         radius = height / 4;
     }
     s2d.canvas.resizeTo(width, height);
+
+    s2d.sprite.scale('button cross', 1, 1);
+    let unscaled_width = s2d.sprite.width('button cross');
+    let upscale = Math.floor(radius / unscaled_width);
+    if (upscale > 1) {
+        s2d.sprite.scale('button cross', upscale, upscale);
+        s2d.sprite.scale('button circle', upscale, upscale);
+        s2d.sprite.scale('button triangle', upscale, upscale);
+        s2d.sprite.scale('button square', upscale, upscale);
+        s2d.sprite.scale('button square', upscale, upscale);
+        s2d.sprite.scale('dc', upscale / 2, upscale / 2);
+    }
+
     pos['down'] = s2d.vec.add(screenCentre, { x: 0, y: radius});
     pos['right'] = s2d.vec.add(screenCentre, { x: radius, y: 0});
     pos['up'] = s2d.vec.add(screenCentre, { x: 0, y: -radius});
@@ -50,7 +63,7 @@ function update_screen_positions() {
 }
 
 function process_input() {
-    let click_radius = 50;
+    let click_radius = s2d.sprite.width('button cross') * 0.75;
     let payload = {};
     let clickPos = s2d.input.mousePosition();
     let no_buttons_down = true;
@@ -112,11 +125,11 @@ function parseServerData(data) {
 }
 
 function setup() {
-    s2d.assets.loadSprite('button cross', './sprites/cross.png', 1, 2, 4);
-    s2d.assets.loadSprite('button circle', './sprites/circle.png', 1, 2, 4);
-    s2d.assets.loadSprite('button triangle', './sprites/triangle.png', 1, 2, 4);
-    s2d.assets.loadSprite('button square', './sprites/square.png', 1, 2, 4);
-    s2d.assets.loadSprite('dc', './sprites/ban.png', 1, 2, 2);
+    s2d.assets.loadSprite('button cross', './sprites/cross.png', 1, 2);
+    s2d.assets.loadSprite('button circle', './sprites/circle.png', 1, 2);
+    s2d.assets.loadSprite('button triangle', './sprites/triangle.png', 1, 2);
+    s2d.assets.loadSprite('button square', './sprites/square.png', 1, 2);
+    s2d.assets.loadSprite('dc', './sprites/ban.png', 1, 2);
 
     // Networking
     server = new WebSocket(serverAddress);
@@ -133,11 +146,12 @@ function init() {
 }
 
 function update(dt) {
-    update_screen_positions()
+    update_screen_values()
     process_input()
     s2d.canvas.clear('ghostwhite');
     if (!connected) {
-        s2d.sprite.draw('dc', 12, 12, 0)
+        let dc_radius = s2d.sprite.width('dc') / 2;
+        s2d.sprite.draw('dc', dc_radius, dc_radius, 0)
     }
     draw_buttons()
 }
