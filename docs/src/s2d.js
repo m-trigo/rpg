@@ -570,7 +570,7 @@ class s2d {
             return s2d.state.sprite.sheets[name].cols * s2d.state.sprite.sheets[name].rows;
         },
 
-        draw(name, x, y, index = 0) {
+        draw(name, x, y, index = 0, centered = false) {
             let sprite = s2d.state.sprite.sheets[name];
             let row = Math.floor(index / sprite.cols);
             let col = index % sprite.cols;
@@ -589,6 +589,11 @@ class s2d {
             }
             x = x / sprite.scale.x;
             y = y / sprite.scale.y;
+
+            if (centered) {
+                x -= width / 2;
+                y -= height / 2;
+            }
 
             let context = s2d.canvas.context();
             context.save();
@@ -707,6 +712,10 @@ class s2d {
 
         div(v, scalar) {
             return this.mult(v, 1 / scalar);
+        },
+
+        distance(u, v) {
+            return Math.sqrt(Math.pow(u.x - v.x, 2) + Math.pow(u.y - v.y, 2));
         },
 
         draw(v, color = '#FF77A8') {

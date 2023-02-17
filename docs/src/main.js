@@ -1,34 +1,101 @@
+/*  Networking  */
+
 const url = window.location.href;
 const LOCAL = (url.includes('local') || url.includes('s2d')) ? true : false;
 const serverAddress = LOCAL ? 'ws://localhost:9020' : 'wss://agile-temple-23495.herokuapp.com';
 
 let server = null;
+let connected = false;
 let cid = 0;
-let pid = 0;
 
-let screenCentre = s2d.vec.zero;
-let players = {};
+/*  Client UI */
 
-let qrcode = null;
-let playerUpdated = true;
-
-function getPlayer(playerId = pid) {
-    return players[playerId];
+let width = 0;
+let height = 0;
+let screenCentre = 0;
+let radius = 0;
+let pos = {}
+let buttons = {
+	"down": {
+        "pressed": false,
+        "down": false,
+    },
+	"right": {
+        "pressed": false,
+        "down": false,
+    },
+	"up": {
+        "pressed": false,
+        "down": false,
+    },
+	"left": {
+        "pressed": false,
+        "down": false,
+    }
 }
 
-let lastNotifyTimestamp = {
+function update_screen_positions() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    screenCentre = s2d.vec.make(width / 2, height / 2);
+    radius = width / 4;
+    if (height < width) {
+        radius = height / 4;
+    }
+    s2d.canvas.resizeTo(width, height);
+    pos['down'] = s2d.vec.add(screenCentre, { x: 0, y: radius});
+    pos['right'] = s2d.vec.add(screenCentre, { x: radius, y: 0});
+    pos['up'] = s2d.vec.add(screenCentre, { x: 0, y: -radius});
+    pos['left'] = s2d.vec.add(screenCentre, { x: -radius, y: 0});
+}
 
-};
+function process_input() {
+    let click_radius = 50;
+    let payload = {};
+    let clickPos = s2d.input.mousePosition();
+    let no_buttons_down = true;
+    for (button in buttons) {
+        let button_down = s2d.input.mouseDown() && s2d.vec.distance(pos[button], clickPos) < click_radius;
+        buttons[button].pressed = button_down && !buttons[button].down;
+        buttons[button].down = button_down;
+        if (button_down) {
+            payload[button] = { pressed: buttons[button].pressed, down: buttons[button].down = button_down };
+            no_buttons_down = false;
+        }
+    }
 
+    connected = server.readyState === WebSocket.OPEN
+    if (!connected) {
+        return;
+    }
+
+    if (no_buttons_down) {
+        return;
+    }
+
+    console.log(JSON.stringify(payload));
+    notify('update', payload);
+}
+
+function draw_buttons() {
+    s2d.sprite.draw('button cross', pos['down'].x, pos['down'].y, buttons['down'].down ? 1 : 0, true);
+    s2d.sprite.draw('button circle', pos['right'].x, pos['right'].y, buttons['right'].down ? 1 : 0, true);
+    s2d.sprite.draw('button triangle', pos['up'].x, pos['up'].y, buttons['up'].down ? 1 : 0, true);
+    s2d.sprite.draw('button square', pos['left'].x, pos['left'].y, buttons['left'].down ? 1 : 0, true);
+}
+
+/* Client Data */
+
+let lastNotifyTimestamp = {};
 let notifyCooldowns = {
-}
+};
 
 function notify(type, raw = {}) {
     let now = s2d.time.elapsed();
 
     if (notifyCooldowns[type] && lastNotifyTimestamp[type]) {
         if (now - lastNotifyTimestamp[type] < notifyCooldowns[type]) {
-            console.log(`Notify skipped (${type})`);
+            //console.log(`Notify skipped (${type})`);
             return;
         }
     }
@@ -42,122 +109,39 @@ function parseServerData(data) {
         cid = parseInt(data.raw);
         console.log(`Joined as client with id ${cid}`);
     }
-
-    if (data.type == 'pid') {
-        pid = parseInt(data.raw);
-        console.log(`Joined as player with id ${pid}`);
-    }
-
-    if (data.type == 'qrcode') {
-        //console.log(data.raw);
-
-        let img = new Image();
-        img.onload = () => qrcode = img;
-        img.src = data.raw;
-
-    }
-
-    if (data.type == 'update') {
-        if (pid > 0) {
-            if (getPlayer() == undefined) {
-                players = data.raw;
-            }
-            return;
-        }
-
-        // Update if newer
-        if (players)
-            playerUpdated = false;
-
-        for (const player of Object.values(data.raw)) {
-            if (getPlayer(player.pid) == undefined || player.updated > getPlayer(player.pid).updated) {
-                players[player.pid] = player;
-                playerUpdated = true;
-            }
-            else {
-                console.log(`Dropped update`);
-            }
-        }
-
-        if (!playerUpdated)
-            console.log(`Player not updated this frame`);
-
-        // Delete if missing
-        for (const id of Object.keys(players)) {
-            if (data.raw[id] == undefined) {
-                delete players[id];
-            }
-        }
-    }
 }
 
-function init() {
-    s2d.canvas.resizeTo(window.innerWidth, window.innerHeight);
+function setup() {
+    s2d.assets.loadSprite('button cross', '../sprites/cross.png', 1, 2, 4);
+    s2d.assets.loadSprite('button circle', '../sprites/circle.png', 1, 2, 4);
+    s2d.assets.loadSprite('button triangle', '../sprites/triangle.png', 1, 2, 4);
+    s2d.assets.loadSprite('button square', '../sprites/square.png', 1, 2, 4);
+    s2d.assets.loadSprite('dc', '../sprites/ban.png', 1, 2, 2);
 
+    // Networking
     server = new WebSocket(serverAddress);
     server.onopen = () => {
         console.log(`Connected to server`);
-        if (window.location.href.includes('join')) {
-            notify('join');
-        }
+        // if (window.location.href.includes('join')) {
+        //     notify('join');
+        // }
     }
     server.onmessage = message => parseServerData(JSON.parse(message.data));
 }
 
+function init() {
+}
+
 function update(dt) {
-
-    let width = window.innerWidth //* 0.8;
-    let height = window.innerHeight //* 0.8;
-    s2d.canvas.resizeTo(width, height);
-    screenCentre = s2d.vec.make(width / 2, height / 2);
-    let serverOrigin = screenCentre;
-
+    update_screen_positions()
+    process_input()
     s2d.canvas.clear('ghostwhite');
-
-    if (pid == 0) {
-        for (const player of Object.values(players)) {
-            let pos = s2d.vec.add(serverOrigin, player.position);
-            let rect = s2d.rect.make(pos.x, pos.y, pos.x + 20, pos.y + 40);
-            s2d.rect.draw(rect, player.color);
-        }
-
-        if (qrcode) {
-            let context = s2d.canvas.context();
-            context.drawImage(qrcode, 0, 0);
-        }
+    if (!connected) {
+        s2d.sprite.draw('dc', 12, 12, 0)
     }
-    else {
-        let p = getPlayer();
-        let modified = false;
-
-        if (s2d.input.mouseDown()) {
-            let touchPosition = s2d.input.mousePosition();
-            p.position.x += 300 * dt * (touchPosition.x <= screenCentre.x ? - 1 : 1);
-            modified = true;
-        }
-
-        if (modified) {
-            p.updated = s2d.time.elapsed();
-            //notify('update', p);
-        }
-
-        // Player Input UI
-        let line = s2d.rect.make(width/2 - 4, 0, width/2 + 4, height);
-        s2d.rect.draw(line, 'black');
-    }
-
-    let border = s2d.rect.make(0, 0, width, height);
-    s2d.rect.draw(border, 'black');
+    draw_buttons()
 }
 
 function main() {
-    s2d.core.init(512, 512, null, init, update);
-    console.log('Version 1');
+    s2d.core.init(512, 512, setup, init, update);
 }
-
-setInterval(() => {
-    let p = getPlayer();
-    if (p) {
-        notify('update', p);
-    }
-}, 5);
