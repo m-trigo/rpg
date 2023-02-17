@@ -112,11 +112,11 @@ function parseServerData(data) {
 }
 
 function setup() {
-    s2d.assets.loadSprite('button cross', '../sprites/cross.png', 1, 2, 4);
-    s2d.assets.loadSprite('button circle', '../sprites/circle.png', 1, 2, 4);
-    s2d.assets.loadSprite('button triangle', '../sprites/triangle.png', 1, 2, 4);
-    s2d.assets.loadSprite('button square', '../sprites/square.png', 1, 2, 4);
-    s2d.assets.loadSprite('dc', '../sprites/ban.png', 1, 2, 2);
+    s2d.assets.loadSprite('button cross', './sprites/cross.png', 1, 2, 4);
+    s2d.assets.loadSprite('button circle', './sprites/circle.png', 1, 2, 4);
+    s2d.assets.loadSprite('button triangle', './sprites/triangle.png', 1, 2, 4);
+    s2d.assets.loadSprite('button square', './sprites/square.png', 1, 2, 4);
+    s2d.assets.loadSprite('dc', './sprites/ban.png', 1, 2, 2);
 
     // Networking
     server = new WebSocket(serverAddress);
