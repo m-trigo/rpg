@@ -192,15 +192,21 @@ class s2d {
 
             /* Mouse Events */
             s2d.canvas.element().onmousemove = e => {
+                e.preventDefault();
+                e.stopPropagation();
                 s2d.state.input.raw.mouse.x = e.clientX;
                 s2d.state.input.raw.mouse.y = e.clientY;
             }
             s2d.canvas.element().onmousedown = e => {
+                e.preventDefault();
+                e.stopPropagation();
                 s2d.state.input.raw.mouse.x = e.clientX;
                 s2d.state.input.raw.mouse.y = e.clientY;
                 s2d.state.input.raw.mouse.pressed = true
             }
             s2d.canvas.element().onmouseup = e => {
+                e.preventDefault();
+                e.stopPropagation();
                 s2d.state.input.raw.mouse.x = e.clientX;
                 s2d.state.input.raw.mouse.y = e.clientY;
                 s2d.state.input.raw.mouse.pressed = false;
@@ -208,15 +214,21 @@ class s2d {
 
             /* Touch Events */
             s2d.canvas.element().ontouchmove = e => {
+                e.preventDefault();
+                e.stopPropagation();
                 s2d.state.input.raw.mouse.x = e.changedTouches[0].clientX;
                 s2d.state.input.raw.mouse.y = e.changedTouches[0].clientY;
             }
             s2d.canvas.element().ontouchstart = e => {
+                e.preventDefault();
+                e.stopPropagation();
                 s2d.state.input.raw.mouse.x = e.changedTouches[0].clientX;
                 s2d.state.input.raw.mouse.y = e.changedTouches[0].clientY;
                 s2d.state.input.raw.mouse.pressed = true
             }
             s2d.canvas.element().ontouchend = e => {
+                e.preventDefault();
+                e.stopPropagation();
                 s2d.state.input.raw.mouse.x = e.changedTouches[0].clientX;
                 s2d.state.input.raw.mouse.y = e.changedTouches[0].clientY;
                 s2d.state.input.raw.mouse.pressed = false
@@ -564,6 +576,16 @@ class s2d {
         scale(name, x, y) {
             s2d.state.sprite.sheets[name].scale.x = x;
             s2d.state.sprite.sheets[name].scale.y = y;
+        },
+
+        width(name) {
+            let sprite = s2d.state.sprite.sheets[name];
+            return sprite.scale.x * sprite.image.width / sprite.cols;
+        },
+
+        height(name) {
+            let sprite = s2d.state.sprite.sheets[name];
+            return sprite.scale.y * sprite.image.height / sprite.rows;
         },
 
         frameCount(name) {
