@@ -43,7 +43,6 @@ function update_screen_values() {
         radius = height / 4;
     }
     s2d.canvas.resizeTo(width, height);
-    s2d.canvas.element().webkitRequestFullscreen();
 
     s2d.sprite.scale('button cross', 1, 1);
     let unscaled_width = s2d.sprite.width('button cross');
