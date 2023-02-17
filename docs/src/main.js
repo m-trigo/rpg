@@ -71,8 +71,8 @@ function process_input() {
         let button_down = s2d.input.mouseDown() && s2d.vec.distance(pos[button], clickPos) < click_radius;
         buttons[button].pressed = button_down && !buttons[button].down;
         buttons[button].down = button_down;
-        if (button_down) {
-            payload[button] = { pressed: buttons[button].pressed, down: buttons[button].down = button_down };
+        if (buttons[button].pressed) {
+            payload[button] = { pressed: true, down: true };
             no_buttons_down = false;
         }
     }
