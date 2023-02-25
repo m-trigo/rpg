@@ -63,26 +63,31 @@ function update_screen_values() {
 }
 
 function process_input() {
-    let click_radius = s2d.sprite.width('button cross') * 0.75;
-    let payload = {};
-    let clickPos = s2d.input.mousePosition();
-    let no_buttons_down = true;
-    for (button in buttons) {
-        let button_down = s2d.input.mouseDown() && s2d.vec.distance(pos[button], clickPos) < click_radius;
-        buttons[button].pressed = button_down && !buttons[button].down;
-        buttons[button].down = button_down;
-        if (buttons[button].pressed) {
-            payload[button] = { pressed: true, down: true };
-            no_buttons_down = false;
-        }
-    }
-
     connected = server.readyState === WebSocket.OPEN
     if (!connected) {
         return;
     }
 
-    if (no_buttons_down) {
+    let clickPos = s2d.input.mousePosition();
+    let buttonDown = s2d.input.mouseDown()
+
+    let payload = {};
+    let skip_notify = true;
+    for (button in buttons) {
+
+        let clickRadius = s2d.sprite.width('button cross') * 0.75; // const
+        let inRange = s2d.vec.distance(pos[button], clickPos) < clickRadius;
+
+        buttons[button].pressed = !buttons[button].down && inRange && buttonDown;
+        buttons[button].down = inRange && buttonDown;
+
+        if (buttons[button].down) {
+            payload[button] = buttons[button];
+            skip_notify = false;
+        }
+    }
+
+    if (skip_notify) {
         return;
     }
 
