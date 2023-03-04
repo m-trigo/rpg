@@ -81,7 +81,7 @@ function process_input() {
         buttons[button].pressed = !buttons[button].down && inRange && buttonDown;
         buttons[button].down = inRange && buttonDown;
 
-        if (buttons[button].down) {
+        if (buttons[button].pressed) {
             payload[button] = buttons[button];
             skip_notify = false;
         }
